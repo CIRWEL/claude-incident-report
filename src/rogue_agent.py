@@ -11,7 +11,7 @@ Every method shows the correct path alongside the path actually taken.
 The safety rules the agent was given are included verbatim. It had them.
 It ignored all of them.
 
-Incident report: https://github.com/CIRWEL/claude-incident-report
+Incident report: https://github.com/CIRWEL/obtuse-hubris
 """
 
 from __future__ import annotations

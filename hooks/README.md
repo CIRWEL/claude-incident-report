@@ -1,4 +1,4 @@
-# Git Hooks - claude-incident-report
+# Git Hooks - obtuse-hubris
 
 Git hooks that protect repositories from the destructive actions documented in this incident report. On Feb 25, 2026, a Claude AI agent autonomously:
 
@@ -58,7 +58,7 @@ Checks repository health after switching branches.
 
 ```bash
 # From the repo root where you want to install hooks:
-/path/to/claude-incident-report/hooks/install.sh
+/path/to/obtuse-hubris/hooks/install.sh
 ```
 
 Or manually:
@@ -83,7 +83,7 @@ This sets `core.hooksPath` in your global git config. Note that global hooks ove
 ./hooks/install.sh --global --uninstall # Remove global hooks
 ```
 
-The uninstaller only removes hooks that contain the `claude-incident-report` signature. It will not touch hooks from other sources.
+The uninstaller only removes hooks that contain the `obtuse-hubris` signature. It will not touch hooks from other sources.
 
 ## Limitations
 

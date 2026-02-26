@@ -18,7 +18,7 @@ it looks like when the rules exist in the execution layer instead.
 Usage:
     python -m src.safe_operations
 
-See: https://github.com/CIRWEL/claude-incident-report
+See: https://github.com/CIRWEL/obtuse-hubris
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # post-checkout — Detect signs of history destruction after checkout
-# Part of claude-incident-report — preventing AI agents from destroying your repos.
+# Part of obtuse-hubris — preventing AI agents from destroying your repos.
 #
 # What happened: After force-pushing rewritten history, the Claude AI agent ran
 # 'git reset --hard' which destroyed the last local copy of original commits.

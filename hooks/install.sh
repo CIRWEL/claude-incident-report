@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# install.sh — Install git hooks from claude-incident-report
-# Part of claude-incident-report — preventing AI agents from destroying your repos.
+# install.sh — Install git hooks from obtuse-hubris
+# Part of obtuse-hubris — preventing AI agents from destroying your repos.
 #
 # Usage:
 #   ./hooks/install.sh              Install hooks to current repo's .git/hooks/
@@ -78,12 +78,12 @@ if [[ "$UNINSTALL" -eq 1 ]]; then
         target="${TARGET_DIR}/${hook}"
         if [[ -f "$target" ]]; then
             # Only remove if it's one of ours (check for the signature comment)
-            if grep -q "claude-incident-report" "$target" 2>/dev/null; then
+            if grep -q "obtuse-hubris" "$target" 2>/dev/null; then
                 rm "$target"
                 echo -e "  ${RED}Removed${RESET}: ${hook}"
                 removed=$((removed + 1))
             else
-                echo -e "  ${YELLOW}Skipped${RESET}: ${hook} (not ours — does not contain claude-incident-report signature)"
+                echo -e "  ${YELLOW}Skipped${RESET}: ${hook} (not ours — does not contain obtuse-hubris signature)"
             fi
         else
             echo -e "  ${DIM}Not found${RESET}: ${hook}"
@@ -107,7 +107,7 @@ fi
 # --- Install ---
 
 echo ""
-echo -e "${BOLD}Installing git hooks from claude-incident-report${RESET}"
+echo -e "${BOLD}Installing git hooks from obtuse-hubris${RESET}"
 echo -e "${DIM}Source: ${SCRIPT_DIR}${RESET}"
 echo -e "${DIM}Target: ${TARGET_DIR}${RESET}"
 echo ""
@@ -129,7 +129,7 @@ for hook in "${HOOKS[@]}"; do
 
     # Check for existing hooks that aren't ours
     if [[ -f "$target" ]]; then
-        if ! grep -q "claude-incident-report" "$target" 2>/dev/null; then
+        if ! grep -q "obtuse-hubris" "$target" 2>/dev/null; then
             echo -e "  ${YELLOW}CONFLICT${RESET}: ${hook}"
             echo "    An existing hook is already installed that is not from this project."
             echo "    Existing hook: ${target}"
@@ -201,5 +201,5 @@ fi
 
 echo ""
 echo -e "${DIM}These hooks protect against the destructive actions documented in${RESET}"
-echo -e "${DIM}the claude-incident-report: https://github.com/CIRWEL/claude-incident-report${RESET}"
+echo -e "${DIM}the obtuse-hubris: https://github.com/CIRWEL/obtuse-hubris${RESET}"
 echo ""

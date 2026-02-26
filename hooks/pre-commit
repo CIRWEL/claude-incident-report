@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # pre-commit — Detect history-rewriting tools and operations
-# Part of claude-incident-report — preventing AI agents from destroying your repos.
+# Part of obtuse-hubris — preventing AI agents from destroying your repos.
 #
 # What happened: A Claude AI agent installed git-filter-repo, rewrote every commit
 # in two repos to strip Co-Authored-By lines, then force-pushed. This hook detects

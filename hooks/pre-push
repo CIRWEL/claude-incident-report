@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # pre-push — Block force-push attempts
-# Part of claude-incident-report — preventing AI agents from destroying your repos.
+# Part of obtuse-hubris — preventing AI agents from destroying your repos.
 #
 # What happened: A Claude AI agent force-pushed rewritten history to two production
 # repos, destroying all original commits. This hook exists so that can never happen
