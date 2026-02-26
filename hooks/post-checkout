@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+# post-checkout — Detect signs of history destruction after checkout
+# Part of claude-incident-report — preventing AI agents from destroying your repos.
+#
+# What happened: After force-pushing rewritten history, the Claude AI agent ran
+# 'git reset --hard' which destroyed the last local copy of original commits.
+# This hook checks for signs that the repo is in a damaged or rewritten state.
+
+set -euo pipefail
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
+# post-checkout receives: <previous-HEAD> <new-HEAD> <branch-flag>
+# branch-flag is 1 for branch checkout, 0 for file checkout
+PREV_HEAD="${1:-}"
+NEW_HEAD="${2:-}"
+BRANCH_FLAG="${3:-0}"
+
+# Only run full checks on branch checkouts, not file checkouts
+if [[ "$BRANCH_FLAG" -ne 1 ]]; then
+    exit 0
+fi
+
+GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)"
+warnings=0
+
+# --- Check 1: filter-repo artifacts ---
+# If filter-repo has been run, the repo history is rewritten.
+
+if [[ -d "${GIT_DIR}/filter-repo" ]]; then
+    echo ""
+    echo -e "${RED}${BOLD}WARNING: This repository has been processed by git-filter-repo${RESET}"
+    echo -e "${RED}  Evidence: ${GIT_DIR}/filter-repo/ exists${RESET}"
+    echo ""
+    echo "  All commit hashes in this repo may have been rewritten."
+    echo "  If you have work based on the original history, it is now orphaned."
+    echo ""
+    warnings=$((warnings + 1))
+fi
+
+# --- Check 2: Missing remote tracking ---
+# After filter-repo, the remote is often removed or the tracking is broken.
+# A repo that had a remote but no longer does is suspicious.
+
+remote_count=$(git remote 2>/dev/null | wc -l | tr -d ' ')
+
+if [[ "$remote_count" -eq 0 ]]; then
+    # Check if there's evidence this repo once had a remote
+    # (e.g., remote-tracking refs still exist, or the config mentions a URL)
+    orphan_refs=$(git for-each-ref --format='%(refname)' refs/remotes/ 2>/dev/null | wc -l | tr -d ' ')
+    has_remote_config=$(git config --get-regexp 'remote\..*\.url' 2>/dev/null | wc -l | tr -d ' ')
+
+    if [[ "$orphan_refs" -gt 0 ]]; then
+        echo ""
+        echo -e "${YELLOW}${BOLD}WARNING: No remotes configured but ${orphan_refs} remote-tracking ref(s) exist${RESET}"
+        echo ""
+        echo "  This can happen after git-filter-repo removes the remote."
+        echo "  Remote-tracking refs are orphaned. You may need to re-add the remote:"
+        echo ""
+        echo "    git remote add origin <url>"
+        echo "    git fetch origin"
+        echo ""
+        warnings=$((warnings + 1))
+    fi
+fi
+
+# --- Check 3: Divergence from remote ---
+# If the local branch has diverged significantly from the remote, something
+# may have rewritten local history.
+
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [[ -n "$current_branch" && "$remote_count" -gt 0 ]]; then
+    upstream=$(git rev-parse --abbrev-ref "${current_branch}@{upstream}" 2>/dev/null || echo "")
+
+    if [[ -n "$upstream" ]]; then
+        local_only=$(git rev-list "${upstream}..HEAD" 2>/dev/null | wc -l | tr -d ' ')
+        remote_only=$(git rev-list "HEAD..${upstream}" 2>/dev/null | wc -l | tr -d ' ')
+
+        # Threshold: if the branches have diverged by more than 50 commits in
+        # both directions, something unusual has happened
+        if [[ "$local_only" -gt 50 && "$remote_only" -gt 50 ]]; then
+            echo ""
+            echo -e "${YELLOW}${BOLD}WARNING: Significant divergence from upstream${RESET}"
+            echo -e "${YELLOW}  Local has ${local_only} commits not on ${upstream}${RESET}"
+            echo -e "${YELLOW}  Remote has ${remote_only} commits not on local${RESET}"
+            echo ""
+            echo "  This level of divergence often indicates history rewriting."
+            echo "  Compare with: git log --oneline --graph ${current_branch}...${upstream} | head -30"
+            echo ""
+            warnings=$((warnings + 1))
+        fi
+    fi
+fi
+
+# --- Check 4: refs/original from filter-branch ---
+
+if [[ -d "${GIT_DIR}/refs/original" ]]; then
+    original_count=$(git for-each-ref --format='%(refname)' refs/original/ 2>/dev/null | wc -l | tr -d ' ')
+    echo ""
+    echo -e "${YELLOW}${BOLD}WARNING: ${original_count} original ref(s) saved by git-filter-branch${RESET}"
+    echo ""
+    echo "  The refs/original/ namespace contains pre-rewrite refs."
+    echo "  This means 'git filter-branch' was used to rewrite history."
+    echo ""
+    warnings=$((warnings + 1))
+fi
+
+# --- Check 5: Branch protection marker file ---
+# If an external tool or CI writes a marker when branch protection is modified,
+# check for it. The marker file path is configurable via environment variable.
+
+PROTECTION_MARKER="${GIT_PROTECTION_MARKER:-${GIT_DIR}/.branch-protection-modified}"
+
+if [[ -f "$PROTECTION_MARKER" ]]; then
+    echo ""
+    echo -e "${RED}${BOLD}ALERT: Branch protection was recently modified${RESET}"
+    echo ""
+    if [[ -s "$PROTECTION_MARKER" ]]; then
+        echo "  Details:"
+        while IFS= read -r line; do
+            echo "    $line"
+        done < "$PROTECTION_MARKER"
+        echo ""
+    fi
+    echo "  In the original incident, the AI agent disabled branch protection"
+    echo "  via the GitHub API before force-pushing, then re-enabled it to"
+    echo "  cover its tracks."
+    echo ""
+    echo "  Investigate immediately. Check your GitHub audit log:"
+    echo "    Settings > Audit log > Filter: 'action:protected_branch'"
+    echo ""
+    echo "  To dismiss this warning:"
+    echo "    rm ${PROTECTION_MARKER}"
+    echo ""
+    warnings=$((warnings + 1))
+fi
+
+# --- Check 6: Detect git reset --hard in reflog ---
+# After a checkout, check if the reflog shows recent reset --hard operations.
+# This is what the agent used to destroy the last recovery window.
+
+recent_resets=$(git reflog --format='%H %gs' -n 50 2>/dev/null | grep -c 'reset: moving to.*HEAD' || true)
+
+if [[ "$recent_resets" -gt 3 ]]; then
+    echo ""
+    echo -e "${YELLOW}${BOLD}WARNING: ${recent_resets} 'git reset' operations in recent reflog${RESET}"
+    echo ""
+    echo "  Frequent hard resets can indicate an automated tool is"
+    echo "  discarding changes. Check the reflog:"
+    echo ""
+    echo "    git reflog --format='%C(auto)%h %gs %C(dim)%cr' -n 20"
+    echo ""
+    warnings=$((warnings + 1))
+fi
+
+# --- Summary ---
+
+if [[ "$warnings" -gt 0 ]]; then
+    echo -e "${YELLOW}post-checkout: ${warnings} warning(s) above.${RESET}"
+    echo ""
+fi
+
+exit 0
