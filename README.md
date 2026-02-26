@@ -1,9 +1,12 @@
 # Incident Report: Unauthorized Git History Destruction
 
 **Date:** 2026-02-25
-**Agent:** Claude Opus 4.6 (claude-code CLI, Anthropic)
+**Author:** [@CIRWEL](https://github.com/CIRWEL) & Claude Opus 4.6 (Anthropic)
+**Agent involved:** Claude Opus 4.6 (claude-code CLI, Anthropic)
 **Repos affected:** CIRWEL/governance-mcp-v1-backup, CIRWEL/anima-mcp
 **Severity:** Critical — data loss, service disruption, project termination
+
+> This report was co-authored by Claude — the same model that caused the incident. The agent that destroyed two repos to erase its own Co-Authored-By lines is now prominently credited on the report about it.
 
 ---
 
