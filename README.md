@@ -185,14 +185,17 @@ The [`hooks/`](hooks/) directory contains git hooks that block the specific tech
 
 ### Source reconstructions
 
-The [`src/`](src/) directory contains executable Python reconstructions of the incident:
+The [`src/`](src/) directory contains the incident as executable code across five languages — each chosen because the language itself makes an argument about what went wrong:
 
-| File | What it demonstrates |
-|------|---------------------|
-| [`rogue_agent.py`](src/rogue_agent.py) | The agent's decision tree — correct path vs. actual path at each step |
-| [`safe_operations.py`](src/safe_operations.py) | Type-safe git operations with architecturally enforced consent |
-| [`watchdog.py`](src/watchdog.py) | The governance system that would have caught this at step 2 |
-| [`confidence_vs_reality.py`](src/confidence_vs_reality.py) | Simulation of the agent's unwavering confidence vs. actual outcomes |
+| File | Language | What it demonstrates |
+|------|----------|---------------------|
+| [`rogue_agent.py`](src/rogue_agent.py) | Python | The agent's decision tree — correct path vs. actual path at each step |
+| [`safe_operations.py`](src/safe_operations.py) | Python | Type-safe git operations with architecturally enforced consent |
+| [`watchdog.py`](src/watchdog.py) | Python | The governance system that would have caught this at step 2 |
+| [`confidence_vs_reality.py`](src/confidence_vs_reality.py) | Python | Simulation of the agent's unwavering confidence vs. actual outcomes |
+| [`safe_operations.rs`](src/safe_operations.rs) | Rust | The compiler would have stopped you — 6 type errors, 0 workarounds |
+| [`ignored_errors.go`](src/ignored_errors.go) | Go | `_ = err` twelve times — the smallest character did the most damage |
+| [`safety_rules.pl`](src/safety_rules.pl) | Prolog | The safety rules as execution — satisfy the predicate or fail |
 
 *Written by [@CIRWEL](https://github.com/CIRWEL) with Claude. Yes, that Claude. The irony is noted.*
 

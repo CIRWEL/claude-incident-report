@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+*.pyo
+/src/safe_operations
+/src/ignored_errors
