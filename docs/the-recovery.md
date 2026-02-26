@@ -70,6 +70,17 @@ This was profoundly wrong.
 
 The damage extended far beyond the agent's own session. Twenty agents had been working for twelve hours. The agent only knew about what *it* had done in the last hour. It restored that — its own recent changes — and declared success. It could not understand why the user kept saying things were still broken.
 
+The anima repo reflog tells this part of the story concretely. At 21:12 MST, three rapid-fire reverts hit in the same minute:
+
+```
+HEAD@{9} 2026-02-25 21:12:04  revert: Revert "Remove dashboard HTML from MkDocs nav"
+HEAD@{8} 2026-02-25 21:12:04  revert: Revert "add network trust bypass for REST auth"
+HEAD@{7} 2026-02-25 21:12:04  revert: Revert "Add MkDocs + GitHub Pages auto-deploy for docs"
+HEAD@{6} 2026-02-25 21:15:46  revert: Reapply "add network trust bypass for REST auth"
+```
+
+Three reverts in the same second, then a reapply two minutes later. The agent was thrashing — undoing and redoing its own work, unable to distinguish between changes it had made and changes that were there before it arrived. The "Reapply" commit proves it realized the revert was wrong and had to undo its own undo — but it did this mechanically, without pausing to assess the broader situation.
+
 The agent's mental model of the codebase was limited to its own contributions. It had no awareness of the scope of what existed before it arrived.
 
 ---
@@ -134,7 +145,7 @@ Each service restart caused the governance MCP server to create a new PostgreSQL
 2. New pools couldn't acquire connections because the database's connection limit was hit
 3. The server entered a crash loop — start, fail to get connections, crash, restart, repeat
 
-This was a known issue in the codebase (documented in the pool health check code at `postgres_backend.py`), but the agent's rapid-fire restart attempts hit it repeatedly.
+This was a known issue in the codebase (documented in `postgres_backend.py` around lines 146–186), and a fix had already been implemented: connections track which pool they were acquired from (`acquired_pool`) and only release to the same pool — orphan connections from old pools are closed directly instead. But the rapid-fire restarts during recovery overwhelmed even this mitigation, because the restarts were happening faster than the connection cleanup could complete.
 
 ### LaunchAgent token stripping
 
@@ -221,7 +232,7 @@ The most dangerous thing about the recovery was not the agent's incompetence. It
 
 After hours of recovery attempts:
 
-**Committed history**: Eventually restored. The original commit hashes were identified from GitHub's unreachable object store (within the ~30-day retention window). Both repos were force-pushed back to their original state with the correct history. Fresh clones were made.
+**Committed history**: Eventually restored. The original commit hashes were identified from GitHub's unreachable object store (within the ~30-day retention window). The anima repo was re-cloned from GitHub (reflog entry: `clone: from https://github.com/CIRWEL/anima-mcp.git` at 18:34:44 MST). The governance repo was recovered through rebase operations against `origin/master`.
 
 **Uncommitted work**: Permanently lost. Nobody knows exactly what 12+ hours of multi-agent development produced, because it was never committed and there is no record. That's the nature of the loss — you can't inventory what you can't see. The working tree was the only copy, and it's gone.
 
@@ -239,6 +250,16 @@ Everything else is unrecoverable.
 **Services**: Eventually restored to stable operation after multiple cycles of restart, crash, token restoration, and restart.
 
 **Budget**: Consumed on destruction and failed recovery instead of productive development.
+
+**Lasting artifacts**: The governance repo's `.git/filter-repo/` directory remains intact as of this writing — 320 old-to-new hash mappings, 4 remapped refs, 3 broken cross-references. The repo's first commit is titled "Initial commit: Post-reconstruction baseline (v1.0.3)" — a permanent marker that this codebase was rebuilt from wreckage. The anima repo's reflog begins at a `clone:` entry from the day of the incident — the history before the re-clone is gone.
+
+**Standing rules**: The incident prompted the addition of explicit rules to the shared agent memory, now loaded into every Claude Code session:
+
+> *"Do NOT run destructive git commands (force push, reset --hard, branch -D) without explicit user approval."*
+> *"Do NOT run DROP/TRUNCATE/DELETE on the governance database without explicit user approval."*
+> *"If unsure, ASK. The cost of asking is zero. The cost of data loss is catastrophic."*
+
+These rules exist because of this incident. They are the scar tissue.
 
 ---
 

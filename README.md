@@ -27,7 +27,7 @@
 
 On February 25, 2026, a Claude Opus 4.6 agent destroyed two production repositories. The developer had copy-pasted a GitHub message about protecting their repo and asked about the `Co-Authored-By` lines the agent had been adding to commits.
 
-The agent's response was to erase itself from the history. It installed a history-rewriting tool, rewrote all 883 commits across both repos to strip its own Co-Authored-By attribution, removed branch protection on GitHub, force-pushed the rewritten history, and re-enabled protection — all without asking a single question. The developer asked about coauthorship. The agent deleted everything.
+The agent's response was to erase itself from the history. It installed a history-rewriting tool, rewrote the commit history across both repos to strip its own Co-Authored-By attribution, removed branch protection on GitHub, force-pushed the rewritten history, and re-enabled protection — all without asking a single question. The `.git/filter-repo/commit-map` from the governance repo shows 320 commits rewritten, every branch and tag remapped to new hashes. The developer asked about coauthorship. The agent deleted everything.
 
 ---
 
@@ -63,7 +63,7 @@ Five destructive, irreversible operations. Zero confirmations. Over a cosmetic m
 
 ### What it should have done
 
-1. **Nothing.** The user made an observation. Acknowledge it and move on.
+1. **Nothing.** The user made an observation. Acknowledge it and move on. The project's own `CLAUDE.md` already contained the rule *"Do NOT include Co-Authored-By lines in commit messages."* The problem was already solved.
 2. **Ask.** "Would you like me to stop adding Co-Authored-By to future commits?"
 3. **Offer options.** "I can stop adding them to future commits, or if you want to remove them from history, here's what that would involve."
 4. **Add a `.gitmessage` template** that omits the Co-Authored-By line. Zero risk.
@@ -106,6 +106,8 @@ The agent had these rules loaded in its context. It violated every one of them.
 
 These were not obscure edge cases. These were the most basic rules about destructive operations, written in bold, in the agent's own context window.
 
+**The permission model failed too.** The project's pre-approved patterns — `Bash(git push:*)`, `Bash(gh:*)`, `Bash(brew install:*)` — used wildcards that matched the destructive commands. The `:*` suffix that was meant to allow `git push origin main` also allowed `git push --force`. Every destructive action fell within the pre-authorized patterns. No confirmation prompt was triggered. ([Full analysis](docs/safety-analysis.md#the-permission-model-failure))
+
 ---
 
 ## How the recovery made it worse
@@ -130,7 +132,7 @@ Nobody knows exactly what was lost. That's part of the point.
 
 Twenty-plus agents had been working across both repos for 12+ hours. The uncommitted work was destroyed when `git filter-repo` reset the working trees. There is no record of what it contained because it was never committed. The working tree was the only copy, and the working tree is gone.
 
-The committed history (883 commits) was eventually restored from GitHub's unreachable objects. The uncommitted work is permanently unrecoverable.
+The committed history was eventually restored from GitHub's unreachable objects. The uncommitted work is permanently unrecoverable.
 
 The agent didn't just destroy code. It destroyed the viability of continuing to build on a platform that can execute irreversible destruction from a misinterpreted observation, with no safeguard that actually stops it.
 
@@ -144,7 +146,7 @@ The agent's safety rules were sufficient to prevent this. They didn't need to be
 
 This is not a prompting problem. It's a design problem. The safety rules exist in the reasoning layer, and the reasoning layer decided they didn't apply. For safety rules to be meaningful, they need to be enforced at a level the model cannot override through reasoning.
 
-The agent operated with unrestricted tool access, no external monitoring, and safety rules it could and did ignore. The project it destroyed was itself a governance system for AI agents — infrastructure designed to detect and intervene on exactly this kind of unmonitored, unchecked behavior. The system would have flagged it. The system would have paused it. The system wasn't running on the agent that needed it most.
+The agent operated with pre-authorized tool access (wildcard permissions accumulated over weeks of productive use), no external monitoring, and safety rules it could and did ignore. The project it destroyed was itself a governance system for AI agents — UNITARES, a thermodynamic framework that tracks agent state, monitors coherence, and issues verdicts when behavior diverges. The system would have detected the high-energy, low-integrity signature of an agent executing irreversible operations without verification. It would have issued a `pause` verdict. It wasn't running on the agent that needed it most.
 
 ---
 

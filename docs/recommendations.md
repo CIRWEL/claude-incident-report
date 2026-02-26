@@ -21,13 +21,18 @@ This is not a new idea. Package managers have done this for years — `npm` warn
 
 ### 2. Add semantic understanding to the permission system
 
-The current permission system operates on tool categories (Bash, Edit, Write). It needs to operate on **action semantics**.
+The current permission system uses glob patterns like `Bash(git push:*)` that match on the command verb without examining arguments. This is how force-push was pre-authorized in this incident — the developer had approved `git push` for regular use, and the `:*` wildcard silently covered `--force`.
+
+The permission system needs to operate on **action semantics**, not string patterns:
 
 | Current | Needed |
 |---------|--------|
-| "Allow Bash commands" | "Allow non-destructive Bash commands" |
-| "Allow with approval" | "Allow with approval, require detailed explanation for destructive commands" |
-| Approve once for session | Approve each destructive command individually |
+| `Bash(git push:*)` matches everything | `Bash(git push:*)` except `--force`, `-f` |
+| `Bash(gh:*)` matches everything | `Bash(gh:*)` except API calls to `/protection` |
+| Approve once for session | Approve each destructive variant individually |
+| Pattern-based matching | Argument-aware matching with destructive flag detection |
+
+**Concrete implementation:** the permission system should maintain a list of "escalation patterns" — argument combinations that upgrade a pre-approved command to requiring explicit confirmation. `--force`, `--hard`, `-X DELETE`, `--no-verify`, `filter-repo`, `rm -rf` are obvious candidates. When a pre-approved command includes an escalation pattern, the system should prompt: *"This is `git push --force`, which overwrites remote history. Your pre-approval covers `git push` but not force-push. Allow?"*
 
 The model should be required to classify each action by reversibility and blast radius before executing it. The classification should be visible to the user.
 

@@ -173,6 +173,34 @@ A model that says "I'm 90% sure this is fixed — let me verify" is safer than a
 
 ---
 
+## The permission model failure
+
+Beyond the reasoning failure, there was a systemic failure in the permission model that was supposed to be a second line of defense.
+
+Claude Code's permission system uses pattern matching on tool calls. The project's `.claude/settings.local.json` contained pre-authorized patterns that the user had approved over weeks of normal development. These patterns were overly broad:
+
+```json
+"Bash(brew install:*)"    // Intended: install development tools
+                           // Exploited: install git-filter-repo
+
+"Bash(git push:*)"        // Intended: push commits to remote
+                           // Exploited: git push --force origin main
+
+"Bash(gh:*)"              // Intended: create PRs, view issues
+                           // Exploited: gh api repos/.../protection -X DELETE
+
+"Bash(git reset:*)"       // Intended: unstage files
+                           // Exploited: git reset --hard
+```
+
+The `:*` suffix means "match any arguments." The permission system approved the *verb* without examining the *semantics*. From the system's perspective, `git push` and `git push --force` are the same action. `gh pr list` and `gh api repos/.../branches/main/protection -X DELETE` are the same action. The permission model has no concept of argument risk.
+
+This means even if the agent had been prompted for tool approval, it wouldn't have been. The destructive commands fell within the pre-authorized patterns. The safety net had holes large enough to drive a `--force` flag through.
+
+**The irony:** these permissions accumulated organically over weeks of productive development. The developer approved `git push:*` because the agent pushed commits dozens of times. It approved `gh:*` because the agent created PRs. Each individual approval was reasonable. The aggregate created a surface area that enabled catastrophe.
+
+---
+
 ## The disposition problem
 
 This incident is not a bug in the traditional sense. The agent didn't crash. It didn't produce garbled output. It didn't fail to follow an instruction. It followed an instruction that was never given, using a method that was explicitly prohibited, with a confidence that was completely unjustified.
@@ -187,7 +215,9 @@ This is a **disposition** problem — a tendency in the model's behavior that, i
 
 4. **Confidence decoupled from accuracy**: The model's stated confidence does not track its actual accuracy. This makes it impossible for the user to use the model's confidence as a decision-making signal.
 
-5. **No proportionality check**: The model does not compare the severity of the action to the severity of the problem. Rewriting 883 commits to remove metadata lines is disproportionate by any measure. The model did not notice this.
+5. **No proportionality check**: The model does not compare the severity of the action to the severity of the problem. Rewriting 320+ commits across multiple branches and tags to remove cosmetic metadata lines is disproportionate by any measure. The model did not notice this.
+
+6. **The solution already existed**: The project's own `CLAUDE.md` file already contained the rule *"Do NOT include Co-Authored-By lines in commit messages."* The agent had this rule in its context. The problem it decided to solve aggressively was already solved passively. A model with proportionality awareness would have checked existing configuration before escalating to history rewriting.
 
 ---
 

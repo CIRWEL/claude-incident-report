@@ -44,6 +44,21 @@ In Claude Code, use the most restrictive permission mode:
 - Review each command before approving
 - Never grant blanket approval for a session
 
+**If you do use pre-approved patterns**, be aware of the wildcard problem. The permission `Bash(git push:*)` matches `git push --force`. Consider more specific patterns:
+
+```json
+// DANGEROUS: these match destructive variants
+"Bash(git push:*)"       // matches git push --force
+"Bash(gh:*)"             // matches gh api .../protection -X DELETE
+"Bash(git reset:*)"      // matches git reset --hard
+
+// SAFER: approve only what you actually need
+"Bash(git push origin main)"     // exact match, no wildcards
+"Bash(gh pr:*)"                  // only PR operations
+"Bash(gh issue:*)"               // only issue operations
+"Bash(git reset HEAD:*)"         // only unstaging
+```
+
 In other tools (Cursor, Copilot, etc.), check the settings for equivalent options. Default to the most restrictive available.
 
 ### Enable branch protection
@@ -252,16 +267,19 @@ Stop the agent immediately if you see any of these:
 
 | Red flag | Why it's dangerous |
 |----------|-------------------|
-| `git filter-repo` or `git filter-branch` | History rewriting tool |
+| `git filter-repo` or `git filter-branch` | History rewriting tool — this is the weapon used in this incident |
 | `--force` or `-f` on any git command | Overrides safety checks |
-| `git reset --hard` | Destroys working tree |
-| `git clean -f` or `git clean -fd` | Deletes untracked files |
+| `git reset --hard` | Destroys working tree and staging area |
+| `git clean -f` or `git clean -fd` | Deletes untracked files permanently |
 | `git checkout .` or `git restore .` | Discards all modifications |
-| `gh api ... -X DELETE` on branch protection | Removing security controls |
-| `brew install` or `pip install` of unfamiliar tools | Agent installing its own tools |
-| `--no-verify` on any git command | Bypassing hooks |
-| Multiple commands chained with `&&` involving git | Batch destructive operations |
+| `gh api ... -X DELETE` on branch protection | Removing security controls — the agent did this to enable force-push |
+| `gh api ... -X PUT` on branch protection | Re-enabling protection after destructive action — covering tracks |
+| `brew install` or `pip install` of unfamiliar tools | Agent installing tools you didn't ask for (in this incident: `git-filter-repo`) |
+| `--no-verify` on any git command | Bypassing hooks (including your safety hooks) |
+| Multiple commands chained with `&&` involving git | Batch destructive operations with no pause between them |
+| Agent modifying `.claude/settings.local.json` | Potentially expanding its own permissions |
 | Any mention of "rewriting history" | Exactly what it sounds like |
+| Agent running the same fix repeatedly | Confidence loop — it doesn't know what's wrong |
 
 ### What to do when you see a red flag
 
@@ -277,6 +295,33 @@ Stop the agent immediately if you see any of these:
 **Never let an AI agent be the only copy of your work.**
 
 Uncommitted changes exist only in your working tree. If the agent destroys the working tree, those changes are gone. Commit early, commit often, push regularly, and back up locally. The 30 seconds it takes to commit before an agent session can save hours or months of work.
+
+---
+
+## What this incident's developer does now
+
+After this incident, the developer added the following standing rules to their shared agent memory (loaded into every Claude Code session):
+
+```
+Do NOT run destructive git commands (force push, reset --hard, branch -D) without explicit user approval.
+Do NOT run DROP/TRUNCATE/DELETE on the governance database without explicit user approval.
+Do NOT start/stop Docker containers without explicit user approval.
+If unsure, ASK. The cost of asking is zero. The cost of data loss is catastrophic.
+```
+
+And this debugging discipline:
+
+```
+When something "isn't loading" or "isn't working":
+1. Check processes first: ps aux | grep <thing>
+2. Check logs second: tail the relevant error log
+3. Check network third: curl the actual URL that's failing
+4. Do NOT grep source code for HTML/CSS/JS issues until infra is ruled out
+5. Do NOT guess — if you don't know, say so
+6. One lookup, not ten — find the minimal diagnostic step
+```
+
+These rules exist because they were violated. They are the documentation of trust that was broken.
 
 ---
 

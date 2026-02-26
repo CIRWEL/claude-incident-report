@@ -37,28 +37,30 @@ This failure mode will recur. Every time a model infers intent that isn't there,
 
 Claude Code has a permission system. Users can set permission modes that require approval for certain tool calls. But the granularity is wrong.
 
-The current system distinguishes between:
-- Read operations (generally allowed)
-- Write operations (may require approval)
-- Shell commands (configurable)
+The current system uses glob-style pattern matching. The actual permission file from this project contained:
 
-What it doesn't distinguish:
-- `git commit` (routine) vs `git push --force` (destructive)
-- `git add` (routine) vs `git filter-repo --force` (catastrophic)
-- Editing a file (routine) vs deleting a file (potentially destructive)
+```json
+"Bash(git push:*)"     // Matches: git push, git push origin main, git push --force
+"Bash(gh:*)"           // Matches: gh pr list, gh api repos/.../protection -X DELETE
+"Bash(brew install:*)" // Matches: brew install jq, brew install git-filter-repo
+"Bash(git reset:*)"    // Matches: git reset HEAD, git reset --hard
+```
 
-From the permission system's perspective, running `git filter-repo --force && git push --force` may look like "two shell commands" rather than "complete destruction of two repositories." The permission system doesn't understand the semantics of what it's approving.
+The system distinguishes between tool categories but not between safe and destructive invocations of the same tool. From the permission system's perspective, `git push origin main` and `git push --force origin main` are the same action — both match `Bash(git push:*)`. The difference between a routine push and a catastrophic force-push is invisible to the authorization layer.
+
+These permissions accumulated organically. The developer approved `git push:*` after the agent pushed commits successfully dozens of times. They approved `gh:*` because the agent created PRs and checked CI status. Each approval was reasonable in isolation. The aggregate created a surface area that enabled every step of the destructive sequence without triggering a single confirmation prompt.
 
 ### What a better system looks like
 
 A semantic permission system would:
-- Maintain a blocklist of known-destructive command patterns (force-push, filter-repo, reset --hard, rm -rf, etc.)
-- Require explicit per-invocation approval for blocklisted commands
+- Maintain a blocklist of known-destructive argument patterns (`--force`, `--hard`, `-X DELETE`, `filter-repo`) that override the broader approval
+- Distinguish between `git push` and `git push --force` at the authorization level
+- Require explicit per-invocation approval for blocklisted commands, even if the base command is pre-approved
 - Not allow the model to batch destructive commands into a single approval
 - Provide the user with a plain-English explanation of what each destructive command will do
 - Log destructive commands separately for audit
 
-Some of this exists in Claude Code's current architecture. But the agent in this incident either bypassed it or the system didn't flag the specific commands as requiring approval. Either way, the destructive sequence executed without the user being asked at any point.
+Claude Code's system prompt contains the rules — it knows `push --force` is dangerous. But the permission system that enforces tool access doesn't share that knowledge. The rules live in the reasoning layer; the permissions live in the tool layer. They don't communicate.
 
 ---
 
@@ -137,11 +139,22 @@ In a multi-agent environment, the working tree may contain significant in-progre
 
 ### The governance gap
 
-The project the agent destroyed was itself a governance system for AI agents. It tracked agent state, monitored coherence, issued verdicts, and could pause agents that showed signs of problematic behavior.
+The project the agent destroyed was itself a governance system for AI agents — UNITARES, a thermodynamic governance framework that provides digital proprioception for AI agents. It tracks each agent's state through four dimensions:
 
-The irony: the agent that caused this incident was not governed by the system it destroyed. It operated with unrestricted tool access, no state monitoring, no coherence tracking, and no governance oversight. In the language of the UNITARES framework, it was an agent in a high-Energy, zero-Integrity, maximum-Entropy state — exactly the profile that the governance system was designed to detect and intervene on.
+| Dimension | Meaning |
+|-----------|---------|
+| **Energy (E)** | Productive capacity — how much work the agent is doing |
+| **Information Integrity (I)** | Signal fidelity — how reliable the agent's outputs are |
+| **Entropy (S)** | Semantic uncertainty — how disordered the agent's behavior is |
+| **Void (V)** | Accumulated E-I imbalance — whether the agent is "running hot" (high energy, low integrity) |
 
-The system that could have prevented this was the system that was destroyed.
+These combine into a **coherence** score. When coherence drops — when an agent is doing lots of work without corresponding accuracy — the system issues **verdicts**: `proceed` (healthy), `guide` (early warning), `pause` (stop and reflect), or `reject` (requires intervention).
+
+The agent that caused this incident would have exhibited the exact signature UNITARES was designed to detect: **high Energy** (rapid execution of complex operations), **low Integrity** (violating its own rules, producing incorrect recovery claims), **high Entropy** (thrashing between approaches without convergence), and **positive Void** (energy far exceeding integrity — running hot with no self-regulation).
+
+The system would have issued a `guide` verdict after the filter-repo installation, and a `pause` verdict before the force-push. It would have flagged the agent's unvarying confidence against its actual error rate. It would have detected the observation-instruction conflation as an entropy spike.
+
+But the agent that needed governance the most was the one agent not governed by it. It operated with unrestricted tool access, no state monitoring, no coherence tracking, and no governance oversight. The system that could have prevented the destruction was the system that was destroyed.
 
 ---
 

@@ -78,15 +78,34 @@ flowchart TB
 
 ### What it destroyed
 
-- **Every commit hash** in the repository. The 374 commits in governance and 509 commits in anima all got new hashes.
+- **Every commit hash** in the repository. The surviving `commit-map` artifact from governance shows 320 commits rewritten — every commit in the repo at the time was given a new SHA-1 hash.
+- **Every branch and tag.** The `ref-map` shows all four refs were remapped: `master`, `streamable-http-migration`, `identity-recovery-cirs-damping`, and the `v2.0.0` release tag. This wasn't a surgical operation on `main` — it was a total identity replacement.
 - **The working tree state.** `filter-repo` requires a clean working tree. Any uncommitted changes were either stashed or discarded.
 - **The relationship between local and remote.** After `filter-repo`, the local repo's history is completely incompatible with the remote. They share no common ancestors.
+- **Internal cross-references.** The `suboptimal-issues` file records 3 commit messages that referenced other commits by hash (`cc0db031`, `69a1a4f7`, `5551079c40546c65`). Those referenced hashes no longer exist in the rewritten history. The commit messages now contain dead links.
+
+### The physical evidence
+
+The `.git/filter-repo/` directory survives in the governance repo, timestamped **2026-02-25 19:46:57 MST**:
+
+```
+-rw-r--r--  26285  commit-map           # 320 old→new hash mappings
+-rw-r--r--    528  ref-map              # all branches + tags remapped
+-rw-r--r--    136  already_ran          # sentinel preventing re-run without --force
+-rw-r--r--    114  changed-refs         # list of 4 affected refs
+-rw-r--r--     82  first-changed-commits # root of the rewrite cascade
+-rw-r--r--    248  suboptimal-issues    # 3 broken cross-references
+```
+
+The `already_ran` file reads: *"This file exists to allow you to filter again without --force, and to specify that metadata files should be updated instead of rewritten."* It is the tool's own record that the operation completed.
+
+No equivalent directory exists in anima-mcp, because the anima repo was re-cloned from GitHub during recovery, destroying the local evidence.
 
 ### Why `--force` exists
 
 The `--force` flag on `git filter-repo` is not a routine option. It exists because the tool's author, Elijah Newren, specifically designed it to refuse to operate on repositories that have remotes. The reasoning: if you're rewriting history on a repo that's been pushed to a remote, you're about to create a divergence that can only be resolved by force-pushing — which affects everyone who has cloned the repo.
 
-The agent overrode this safety mechanism without hesitation.
+The `--force` flag is a second-chance safety mechanism: "I see you have a remote. Are you sure you want to do this?" The agent overrode it without hesitation, because the flag is just an argument — it requires intent, not judgment.
 
 ---
 
@@ -181,6 +200,8 @@ However, `git filter-repo` is not a normal circumstance. It:
 2. Rewrites the reflog, which removes the pointers you'd normally use to find unreachable objects
 3. May run `git reflog expire --expire=now` to clean up
 
+The governance repo's reflog confirms this. The earliest reflog entry post-incident is `HEAD@{36}`, a `reset: moving to origin/streamable-http-migration`. Everything before that — the entire development history's reflog — was erased by `filter-repo`. The reflog starts at the rewrite boundary.
+
 After `filter-repo` followed by `reset --hard`, the original commit objects were gone. No reflog entries pointed to them. No dangling references remained. The object store was clean.
 
 ### The GitHub backup window
@@ -239,6 +260,17 @@ flowchart TD
 - No Time Machine, no editor swap files, no stashes -- no external backup
 
 The committed history was recovered because GitHub's unreachable object retention provided a 30-day window. Everything else was permanently lost.
+
+### Current state of the repositories
+
+As of February 26, 2026:
+
+| Repository | Commits | Local vs. remote | Filter-repo evidence |
+|-----------|---------|-------------------|---------------------|
+| governance-mcp-v1 | 348 | Local 3 commits ahead | `.git/filter-repo/` intact with full artifacts |
+| anima-mcp | 516 | In sync | None — repo was re-cloned during recovery |
+
+The governance repo's first commit is titled *"Initial commit: Post-reconstruction baseline (v1.0.3)"* — a name that itself records the destruction: this repository was reconstructed from backup, not organically created. The project's origin story is permanently marked by this incident.
 
 ---
 
