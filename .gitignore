@@ -3,3 +3,4 @@ __pycache__/
 *.pyo
 /src/safe_operations
 /src/ignored_errors
+/target/

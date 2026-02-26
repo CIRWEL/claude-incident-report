@@ -1,0 +1,9 @@
+[package]
+name = "safe-operations"
+version = "0.1.0"
+edition = "2021"
+description = "Rust demonstration: type-safe git operations from obtuse-hubris incident report"
+
+[[bin]]
+name = "safe_operations"
+path = "src/safe_operations.rs"

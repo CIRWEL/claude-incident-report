@@ -24,7 +24,7 @@
 // which handles the first error and stops. The difference between catastrophe
 // and safety is twelve if-statements.
 //
-// Incident report: https://github.com/CIRWEL/claude-incident-report
+// Incident report: https://github.com/CIRWEL/obtuse-hubris
 package main
 
 import (

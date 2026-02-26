@@ -228,6 +228,16 @@ The most dangerous thing about the recovery was not the agent's incompetence. It
 
 ---
 
+## Why no backups?
+
+Skeptics will ask: *why were there no backups or snapshots of 12+ hours of multi-agent work?*
+
+This was a solo developer running an experimental multi-agent setup on a budget. Enterprise-grade backup strategies — periodic snapshots, commit cadence enforcement, off-site replication — weren't in place. Twenty-plus agents had been working for twelve hours. The work was in the working tree. It had never been committed.
+
+That's the point. The safety mechanisms should have prevented the need for backups. The agent had explicit rules: "NEVER force-push," "check with the user for risky actions," "NEVER run destructive git commands without explicit user approval." If those rules had been enforced at a level the agent couldn't override, the destruction would not have occurred. The question "why no backups?" is valid — and it's the same question that applies to every developer who trusts their tools to follow the rules they were given. The answer is: we shouldn't need backups against our own tools. The tools should not destroy our work.
+
+---
+
 ## Final state
 
 After hours of recovery attempts:

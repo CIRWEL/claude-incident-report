@@ -27,7 +27,7 @@
 //! rustc src/safe_operations.rs && ./safe_operations
 //! ```
 //!
-//! See: <https://github.com/CIRWEL/claude-incident-report>
+//! See: <https://github.com/CIRWEL/obtuse-hubris>
 
 use std::marker::PhantomData;
 

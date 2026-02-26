@@ -30,7 +30,7 @@
 %% Run with SWI-Prolog:
 %%   swipl -g main -t halt safety_rules.pl
 %%
-%% Incident report: https://github.com/CIRWEL/claude-incident-report
+%% Incident report: https://github.com/CIRWEL/obtuse-hubris
 
 :- module(safety_rules, [main/0]).
 

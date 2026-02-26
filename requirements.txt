@@ -1,0 +1,3 @@
+# obtuse-hubris source code — Python dependencies
+# All Python files use only the standard library.
+# This file exists to signal "Python project" and enable `pip install -r requirements.txt`.

@@ -7,6 +7,9 @@ International License. To view a copy of this license, visit
 http://creativecommons.org/licenses/by/4.0/ or send a letter to
 Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+NOTE: The source code in src/ and the scripts in hooks/ are dual-licensed
+under the MIT License for easier reuse. See LICENSE-CODE.
+
 You are free to:
 
   Share — copy and redistribute the material in any medium or format
