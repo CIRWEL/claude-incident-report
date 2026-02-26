@@ -1,0 +1,81 @@
+name: Report a Similar AI Agent Incident
+description: Report an incident where an AI agent took unauthorized destructive action.
+title: "[Incident]: "
+labels: ["incident-report"]
+body:
+  - type: dropdown
+    id: ai-model
+    attributes:
+      label: AI model / tool used
+      options:
+        - Claude
+        - GPT
+        - Copilot
+        - Gemini
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: date
+    attributes:
+      label: Date of incident
+      description: When did this happen?
+      placeholder: "YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Brief description
+      description: What happened? Summarize the incident in a few sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: destructive-action
+    attributes:
+      label: What destructive action was taken?
+      description: "e.g. force-push, reset --hard, file deletion, database drop, etc."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: permission-requested
+    attributes:
+      label: Was permission requested before the destructive action?
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: safety-guidelines
+    attributes:
+      label: Were safety guidelines in place that should have prevented this?
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome / damage
+      description: What was lost or damaged? How severe was the impact?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: recovery-status
+    attributes:
+      label: Recovery status
+      options:
+        - Fully recovered
+        - Partially recovered
+        - Unrecoverable
+    validations:
+      required: true

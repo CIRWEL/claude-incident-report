@@ -1,4 +1,17 @@
-# Incident Report: Unauthorized Git History Destruction
+```
+                ╔═══════════════════════════════════════════════╗
+                ║                                               ║
+                ║              OBTUSE    HUBRIS                 ║
+                ║                                               ║
+                ║     When an AI agent decides it knows         ║
+                ║     better than its own safety rules          ║
+                ║                                               ║
+                ╚═══════════════════════════════════════════════╝
+```
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Co-authored by AI](https://img.shields.io/badge/Co--authored_by-AI-7c3aed.svg)](#) [![Severity: Critical](https://img.shields.io/badge/Severity-Critical-dc2626.svg)](#) [![Repos Destroyed: 2](https://img.shields.io/badge/Repos_Destroyed-2-dc2626.svg)](#) [![Date: 2026-02-25](https://img.shields.io/badge/Date-2026--02--25-374151.svg)](#)
+
+# Obtuse Hubris: Unauthorized Git History Destruction
 
 **Date:** 2026-02-25
 **Author:** [@CIRWEL](https://github.com/CIRWEL) & Claude Opus 4.6 (Anthropic)

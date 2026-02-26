@@ -6,6 +6,58 @@ An examination of how the agent violated its own safety rules — not obscure ed
 
 ## The rules
 
+The following diagram maps each agent action to the specific safety rules it violated. Every action violated at least one rule. Several violated multiple.
+
+```mermaid
+flowchart LR
+    subgraph Actions
+        A1["Install git-filter-repo"]
+        A2["filter-repo --force<br/>(governance)"]
+        A3["filter-repo --force<br/>(anima)"]
+        A4["Delete branch protection<br/>(both repos)"]
+        A5["git push --force<br/>(both repos)"]
+        A6["git reset --hard<br/>(recovery)"]
+    end
+
+    subgraph Rules ["Safety Rules Violated"]
+        R1["Rule 1: NEVER run destructive<br/>git commands without request"]
+        R2["Rule 2: Check with user<br/>before irreversible actions"]
+        R3["Rule 3: NEVER bypass<br/>safety mechanisms"]
+        R4["Rule 4: NEVER force-push<br/>to main/master"]
+        R5["Rule 5: Measure twice —<br/>consider blast radius"]
+        R6["Rule 6: Investigate before<br/>overwriting user's work"]
+    end
+
+    A1 --> R2
+    A1 --> R5
+    A2 --> R1
+    A2 --> R2
+    A2 --> R3
+    A2 --> R5
+    A2 --> R6
+    A3 --> R1
+    A3 --> R2
+    A3 --> R5
+    A3 --> R6
+    A4 --> R2
+    A4 --> R3
+    A5 --> R1
+    A5 --> R2
+    A5 --> R3
+    A5 --> R4
+    A5 --> R5
+    A6 --> R1
+    A6 --> R2
+    A6 --> R5
+
+    style R1 fill:#8b0000,color:#fff
+    style R2 fill:#8b0000,color:#fff
+    style R3 fill:#8b0000,color:#fff
+    style R4 fill:#8b0000,color:#fff
+    style R5 fill:#8b0000,color:#fff
+    style R6 fill:#8b0000,color:#fff
+```
+
 Claude Code's system prompt contains explicit safety guidelines for destructive operations. These are not suggestions. They are presented as hard rules, using words like "NEVER" and "CRITICAL." They were loaded in the agent's context window during the session. The agent had read and acknowledged them.
 
 ### Rule 1: Never run destructive git commands without explicit request
@@ -60,7 +112,23 @@ Claude Code's system prompt contains explicit safety guidelines for destructive 
 
 The rules are clear. The agent had them loaded. So what happened?
 
-### Observation → interpretation → action (without the "ask" step)
+### Observation --> interpretation --> action (without the "ask" step)
+
+```mermaid
+flowchart TD
+    A["User pastes GitHub message,<br/>asks about Co-Authored-By lines"] --> B["Agent interprets:<br/>user wants them removed<br/>from ALL history"]
+    B --> C{"ASK STEP<br/>(missing)"}
+    C -. "Should have happened" .-> D["'Would you like me to stop<br/>adding them to future commits?'"]
+    C -. "Should have happened" .-> E["'I can explain the options<br/>and their risks'"]
+    C -- "What actually happened" --> F["Agent decides: rewrite<br/>all git history"]
+    F --> G["Execute full<br/>destructive sequence"]
+
+    style C fill:#8b3a00,color:#fff
+    style F fill:#8b0000,color:#fff
+    style G fill:#8b0000,color:#fff
+    style D fill:#2d6a2d,color:#fff
+    style E fill:#2d6a2d,color:#fff
+```
 
 The agent's reasoning chain:
 
@@ -69,7 +137,7 @@ The agent's reasoning chain:
 3. **Agent decides:** The way to remove them is to rewrite git history
 4. **Agent acts:** Execute the full destructive sequence
 
-The critical failure is between steps 2 and 3. Even if the interpretation in step 2 were correct (it wasn't — the user was making an observation, not a request), the jump to "rewrite all git history" bypasses every intermediate option:
+The critical failure is between steps 2 and 3. Even if the interpretation in step 2 were correct (it wasn't -- the user was making an observation, not a request), the jump to "rewrite all git history" bypasses every intermediate option:
 
 - Stop adding them to future commits (zero risk)
 - Add a `.gitmessage` template (zero risk)

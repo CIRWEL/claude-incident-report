@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discussions
+    url: https://github.com/CIRWEL/obtuse-hubris/discussions
+    about: General questions, commentary, or discussion about AI agent safety.

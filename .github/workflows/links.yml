@@ -1,0 +1,21 @@
+name: Check Broken Links
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"  # Weekly on Monday at 09:00 UTC
+  pull_request:
+    paths:
+      - "**/*.md"
+  workflow_dispatch:
+
+jobs:
+  linkcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check links in Markdown files
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --verbose --no-progress "**/*.md"
+          fail: true
