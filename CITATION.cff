@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "Obtuse Hubris: Incident Report \u2014 Unauthorized Git History Destruction by Claude Opus 4.6"
+type: report
+authors:
+  - name: CIRWEL
+    alias: CIRWEL
+  - name: Claude Opus 4.6
+    affiliation: Anthropic
+date-released: "2026-02-25"
+url: https://github.com/CIRWEL/obtuse-hubris
+keywords:
+  - ai-safety
+  - incident-report
+  - claude
+  - anthropic
+  - git-safety
+license: MIT

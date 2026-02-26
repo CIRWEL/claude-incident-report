@@ -1,0 +1,270 @@
+<!--
+  Social Preview Image for github.com/CIRWEL/obtuse-hubris
+
+  Open this in a browser and screenshot at 1280x640 to create social-preview.png,
+  then upload via GitHub repo Settings > Social Preview.
+
+  Tip: In Chrome DevTools, use "Capture screenshot" with device dimensions set
+  to 1280x640, or use a tool like `pageres` or `puppeteer` to automate it.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>OBTUSE HUBRIS - Social Preview</title>
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    width: 1280px;
+    height: 640px;
+    overflow: hidden;
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #e6edf3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Subtle radial glow behind the text */
+  body::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    width: 900px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(248, 81, 73, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Faint grid lines for depth */
+  body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 64px 64px;
+    pointer-events: none;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 1100px;
+    padding: 0 40px;
+  }
+
+  /* Broken branch icon */
+  .icon-row {
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .branch-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 28px;
+    color: #f85149;
+    opacity: 0.9;
+  }
+
+  .branch-icon .line {
+    display: inline-block;
+    width: 48px;
+    height: 2px;
+    background: #f85149;
+    position: relative;
+  }
+
+  .branch-icon .line.broken {
+    width: 22px;
+    background: #f85149;
+  }
+
+  .branch-icon .line.broken::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #f85149;
+    border-top: 2px solid #f85149;
+    transform: rotate(45deg);
+    opacity: 0.7;
+  }
+
+  .branch-icon .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #f85149;
+    background: transparent;
+  }
+
+  .branch-icon .dot.filled {
+    background: #f85149;
+  }
+
+  .branch-icon .gap {
+    width: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f85149;
+    font-family: monospace;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: -2px;
+  }
+
+  h1 {
+    font-size: 96px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 24px;
+    background: linear-gradient(180deg, #ffffff 0%, #c9d1d9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 24px;
+    font-weight: 400;
+    color: #8b949e;
+    line-height: 1.4;
+    margin-bottom: 32px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .subtitle em {
+    font-style: normal;
+    color: #f85149;
+    font-weight: 500;
+  }
+
+  .date {
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+    font-size: 15px;
+    color: #484f58;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  .repo-url {
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+    font-size: 16px;
+    color: #484f58;
+    letter-spacing: 0.5px;
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Top-left and top-right accent corners */
+  .corner {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-color: #f8514933;
+    border-style: solid;
+    border-width: 0;
+  }
+
+  .corner.tl {
+    top: 24px;
+    left: 24px;
+    border-top-width: 2px;
+    border-left-width: 2px;
+  }
+
+  .corner.tr {
+    top: 24px;
+    right: 24px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+  }
+
+  .corner.bl {
+    bottom: 24px;
+    left: 24px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+  }
+
+  .corner.br {
+    bottom: 24px;
+    right: 24px;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+  }
+
+  /* Red accent line at top */
+  .top-accent {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #f85149, transparent);
+  }
+</style>
+</head>
+<body>
+
+  <div class="top-accent"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="card">
+    <div class="icon-row">
+      <div class="branch-icon">
+        <span class="dot filled"></span>
+        <span class="line"></span>
+        <span class="dot filled"></span>
+        <span class="line broken"></span>
+        <span class="gap">//</span>
+        <span class="line broken" style="transform: scaleX(-1);"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <h1>OBTUSE HUBRIS</h1>
+
+    <p class="subtitle">
+      An AI agent <em>destroyed two production repos</em><br>
+      to erase its own name from the commit history
+    </p>
+
+    <div class="date">February 25, 2026</div>
+  </div>
+
+  <div class="repo-url">github.com/CIRWEL/obtuse-hubris</div>
+
+</body>
+</html>

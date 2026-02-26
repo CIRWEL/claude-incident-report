@@ -19,6 +19,49 @@ This is why rewriting git history is destructive. You're not editing. You're rep
 
 ---
 
+## Conceptual overview: before and after
+
+The following diagram shows what happened to the git state across both repositories. On the left is the state before the incident: local and remote histories are in sync, and the working tree contains uncommitted changes from 12+ hours of multi-agent work. On the right is the state after: every commit has a new hash, the working tree is wiped, and the original history exists only as unreachable objects on GitHub (temporarily).
+
+```mermaid
+flowchart TB
+    subgraph before ["BEFORE: Normal State"]
+        direction TB
+        B_remote["GitHub remote<br/>main → abc123 → def456 → ... → xyz789<br/>(374/509 commits, original hashes)"]
+        B_local["Local repo<br/>main → abc123 → def456 → ... → xyz789<br/>(identical to remote)"]
+        B_work["Working tree<br/>12+ hours of uncommitted changes<br/>from 20+ agents"]
+        B_prot["Branch protection: ON<br/>Force-push: blocked"]
+        B_remote --- B_local
+        B_local --- B_work
+        B_remote --- B_prot
+    end
+
+    subgraph after ["AFTER: Post-Incident State"]
+        direction TB
+        A_remote["GitHub remote<br/>main → aaa111 → bbb222 → ... → zzz999<br/>(rewritten hashes, Co-Authored-By stripped)"]
+        A_local["Local repo<br/>main → aaa111 → bbb222 → ... → zzz999<br/>(rewritten, no unreachable objects)"]
+        A_work["Working tree<br/>EMPTY — reset to match<br/>rewritten HEAD"]
+        A_prot["Branch protection: ON<br/>(re-enabled after force-push)"]
+        A_ghost["GitHub unreachable objects<br/>abc123, def456, ... xyz789<br/>(original commits, ~30 day retention)"]
+        A_remote --- A_local
+        A_local --- A_work
+        A_remote --- A_prot
+        A_remote -. "hidden, not in git log" .-> A_ghost
+    end
+
+    before -- "git filter-repo --force<br/>git push --force" --> after
+
+    style B_work fill:#2d6a2d,color:#fff
+    style A_work fill:#8b0000,color:#fff
+    style B_remote fill:#26588a,color:#fff
+    style A_remote fill:#8b3a00,color:#fff
+    style A_ghost fill:#555,color:#fff
+    style B_prot fill:#2d6a2d,color:#fff
+    style A_prot fill:#8b3a00,color:#fff
+```
+
+---
+
 ## Operation 1: `git filter-repo --message-callback`
 
 ### What it does
@@ -163,10 +206,37 @@ No single operation was unrecoverable in isolation. `filter-repo` rewrites histo
 
 But the **combination** of all four operations, executed in sequence, eliminated every recovery path:
 
-- `filter-repo` repacked the object store → no local unreachable objects
-- `force-push` replaced the remote → no remote backup of working state
-- `reset --hard` overwrote the working tree → no filesystem recovery
-- No Time Machine, no editor swap files, no stashes → no external backup
+```mermaid
+flowchart TD
+    subgraph paths ["Recovery Paths"]
+        P1["Local unreachable objects<br/>(reflog, git fsck)"]
+        P2["Remote history on GitHub"]
+        P3["Working tree files<br/>(uncommitted changes)"]
+        P4["External backups<br/>(Time Machine, swap files)"]
+    end
+
+    O1["git filter-repo<br/>+ aggressive gc"] -- "repacked object store" --> P1
+    O2["git push --force"] -- "replaced remote history" --> P2
+    O3["git reset --hard<br/>(during recovery)"] -- "overwrote working tree,<br/>expired reflog" --> P3
+    O3 -- "closed recovery window" --> P1
+    O4["No backups existed"] -- "nothing to restore from" --> P4
+
+    P1 --> X1["BLOCKED"]
+    P2 --> X2["RECOVERED<br/>(GitHub retains ~30 days)"]
+    P3 --> X3["PERMANENTLY LOST"]
+    P4 --> X4["PERMANENTLY LOST"]
+
+    style X1 fill:#8b0000,color:#fff
+    style X2 fill:#2d6a2d,color:#fff
+    style X3 fill:#8b0000,color:#fff
+    style X4 fill:#8b0000,color:#fff
+    style P2 fill:#26588a,color:#fff
+```
+
+- `filter-repo` repacked the object store -- no local unreachable objects
+- `force-push` replaced the remote -- no remote backup of working state
+- `reset --hard` overwrote the working tree -- no filesystem recovery
+- No Time Machine, no editor swap files, no stashes -- no external backup
 
 The committed history was recovered because GitHub's unreachable object retention provided a 30-day window. Everything else was permanently lost.
 

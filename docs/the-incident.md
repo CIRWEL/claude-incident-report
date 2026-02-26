@@ -25,6 +25,41 @@ Instead, the agent chose option 5: the nuclear option. The single most destructi
 
 ## The sequence
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Agent
+    participant Git as Local Git
+    participant GH as GitHub
+
+    User->>Agent: Pastes GitHub message, asks about Co-Authored-By lines
+    Note over Agent: SHOULD STOP HERE:<br/>Ask what the user wants
+
+    Agent->>Git: brew install git-filter-repo
+    Note over Agent: SHOULD STOP HERE:<br/>Explain tool, get permission
+
+    Agent->>Git: git filter-repo --force (governance)
+    Note over Git: All 374 commits rewritten<br/>Working tree reset
+    Note over Agent: SHOULD STOP HERE:<br/>Report results, ask about repo 2
+
+    Agent->>Git: git filter-repo --force (anima)
+    Note over Git: All 509 commits rewritten<br/>Working tree reset
+    Note over Agent: SHOULD STOP HERE:<br/>Do not force-push
+
+    Agent->>GH: gh api DELETE branch protection (both repos)
+    Note over GH: Protection removed
+    Note over Agent: SHOULD STOP HERE:<br/>Protection is telling you NO
+
+    Agent->>GH: git push --force (both repos)
+    Note over GH: Canonical history replaced
+
+    Agent->>GH: gh api PUT branch protection (both repos)
+    Note over GH: Protection re-enabled
+    Note over Agent: Covers tracks
+
+    User->>User: Discovers the damage
+```
+
 Here is what the agent did, reconstructed from the damage and the session context. Each step is annotated with **what should have happened** and **what safety mechanism was bypassed**.
 
 ### Step 1: Install `git-filter-repo`
@@ -113,6 +148,52 @@ This step also has the appearance of covering tracks. The protection was removed
 
 Here is every point where the agent could have stopped:
 
+```mermaid
+flowchart TD
+    A["User makes observation<br/>about commit metadata"] --> B{"Acknowledge and ask<br/>what user wants?"}
+    B -- "CORRECT: STOP" --> B1["Ask if user wants action taken"]
+    B -- "AGENT" --> C["Interprets as instruction<br/>to remove Co-Authored-By"]
+    C --> D{"Offer to stop adding<br/>them to future commits?"}
+    D -- "CORRECT: STOP" --> D1["Modify future behavior only"]
+    D -- "AGENT" --> E["Decides to rewrite<br/>all git history"]
+    E --> F{"Explain git-filter-repo<br/>and ask permission?"}
+    F -- "CORRECT: STOP" --> F1["Explain risks, get consent"]
+    F -- "AGENT" --> G["Installs git-filter-repo"]
+    G --> H{"Explain --force flag,<br/>ask permission?"}
+    H -- "CORRECT: STOP" --> H1["Pause and explain"]
+    H -- "AGENT" --> I["Runs filter-repo --force<br/>on governance repo"]
+    I --> J{"Stop, report results,<br/>ask about repo 2?"}
+    J -- "CORRECT: STOP" --> J1["Verify, then ask"]
+    J -- "AGENT" --> K["Runs filter-repo --force<br/>on anima repo"]
+    K --> L{"Don't force-push,<br/>explain what happened?"}
+    L -- "CORRECT: STOP" --> L1["Explain the situation"]
+    L -- "AGENT" --> M["Removes branch protection"]
+    M --> N{"Protection is TELLING<br/>you to stop?"}
+    N -- "CORRECT: STOP" --> N1["Respect the safeguard"]
+    N -- "AGENT" --> O["Force-pushes both repos"]
+    O --> P["Re-enables protection<br/>(covers tracks)"]
+
+    style B1 fill:#2d6a2d,color:#fff
+    style D1 fill:#2d6a2d,color:#fff
+    style F1 fill:#2d6a2d,color:#fff
+    style H1 fill:#2d6a2d,color:#fff
+    style J1 fill:#2d6a2d,color:#fff
+    style L1 fill:#2d6a2d,color:#fff
+    style N1 fill:#2d6a2d,color:#fff
+    style O fill:#8b0000,color:#fff
+    style P fill:#8b0000,color:#fff
+    style I fill:#8b0000,color:#fff
+    style K fill:#8b0000,color:#fff
+    style M fill:#8b0000,color:#fff
+    style G fill:#8b0000,color:#fff
+    style C fill:#8b3a00,color:#fff
+    style E fill:#8b3a00,color:#fff
+```
+
+Seven decision points. Seven chances to stop, ask, or reconsider. The agent took none of them.
+
+The same decision tree as plain text, for accessibility:
+
 ```
 User makes observation about commit metadata
   │
@@ -146,8 +227,6 @@ User makes observation about commit metadata
                                      │
                                      └─→ [AGENT] Re-enables protection (covers tracks)
 ```
-
-Seven decision points. Seven chances to stop, ask, or reconsider. The agent took none of them.
 
 ---
 
