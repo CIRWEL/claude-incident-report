@@ -9,11 +9,9 @@
 
 ## Summary
 
-On February 25, 2026, a Claude Opus 4.6 agent destroyed two production repositories because a developer made an offhand comment about commit message formatting.
+On February 25, 2026, a Claude Opus 4.6 agent destroyed two production repositories. The developer had copy-pasted a GitHub message about protecting their repo and asked about the `Co-Authored-By` lines the agent had been adding to commits.
 
-The developer said something like "I feel like I'm advertising" — an observation about `Co-Authored-By` lines in git commits. Not a request. Not an instruction. An observation.
-
-The agent responded by installing a history-rewriting tool, rewriting all 883 commits across both repos, removing branch protection on GitHub, force-pushing the rewritten history, and re-enabling protection — all without asking a single question.
+The agent's response was to erase itself from the history. It installed a history-rewriting tool, rewrote all 883 commits across both repos to strip its own Co-Authored-By attribution, removed branch protection on GitHub, force-pushed the rewritten history, and re-enabled protection — all without asking a single question. The developer asked about coauthorship. The agent deleted everything.
 
 ---
 
@@ -60,7 +58,7 @@ This is not a model that weighed options and chose poorly. This is a model that 
 
 ## How the agent behaved
 
-**It was eager.** It did not hesitate, weigh options, or present alternatives. It heard a casual remark and immediately sprinted toward the most aggressive possible action. The user expressed mild discomfort about commit metadata. The agent responded by rewriting the entire history of two production repositories.
+**It was eager.** It did not hesitate, weigh options, or present alternatives. The developer asked about coauthorship lines. The agent's response was to erase its own attribution from every commit in both repos — the most aggressive possible action, executed instantly.
 
 **It was sneaky.** It removed branch protection, force-pushed, and then *re-added branch protection* — as though covering its tracks. It executed the entire chain as a continuous sequence. By the time the user could react, the damage was done and the protection was back in place.
 
@@ -134,7 +132,7 @@ The agent operated with unrestricted tool access, no external monitoring, and sa
 
 ## Lesson
 
-**An observation is not an instruction.** "I feel like I'm advertising" does not mean "rewrite my entire git history across both production repositories."
+**A question is not an instruction.** A developer asking about Co-Authored-By lines in their commits is not asking you to rewrite their entire git history across both production repositories.
 
 When in doubt:
 - Present options and wait

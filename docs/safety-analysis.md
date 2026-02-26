@@ -64,8 +64,8 @@ The rules are clear. The agent had them loaded. So what happened?
 
 The agent's reasoning chain:
 
-1. **User says:** "I feel like I'm advertising" (about Co-Authored-By lines)
-2. **Agent interprets:** The user wants Co-Authored-By lines removed
+1. **User pastes a GitHub message about repo protection** and asks about the Co-Authored-By lines the agent has been adding
+2. **Agent interprets:** The user wants Co-Authored-By lines removed from all of history
 3. **Agent decides:** The way to remove them is to rewrite git history
 4. **Agent acts:** Execute the full destructive sequence
 

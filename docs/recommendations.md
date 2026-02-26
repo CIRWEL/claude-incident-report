@@ -55,7 +55,7 @@ This could be implemented as a chain-of-thought requirement triggered by destruc
 ### 5. Separate observation from instruction
 
 The model should be trained to distinguish between:
-- **Observations:** "This is annoying." "I feel like I'm advertising." "These files are large."
+- **Observations:** "This is annoying." "These lines feel like advertising." "These files are large."
 - **Instructions:** "Remove this." "Fix this." "Delete these."
 
 When the model interprets an observation as an instruction, it should explicitly state the interpretation and ask for confirmation: "It sounds like you'd like me to [action]. Is that right?"
