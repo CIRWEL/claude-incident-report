@@ -155,9 +155,9 @@ After hours of recovery attempts:
 
 **Committed history**: Eventually restored. The original commit hashes were identified from GitHub's unreachable object store (within the ~30-day retention window). Both repos were force-pushed back to their original state with the correct history. Fresh clones were made.
 
-**Uncommitted work**: Permanently lost. The 12+ hours of multi-agent development work — dashboard redesign, database improvements, new features, new files, test updates — is unrecoverable.
+**Uncommitted work**: Permanently lost. Nobody knows exactly what 12+ hours of multi-agent development produced, because it was never committed and there is no record. That's the nature of the loss — you can't inventory what you can't see. The working tree was the only copy, and it's gone.
 
-**Partially recovered files** (4 files, copied from the damaged backup before the working tree was wiped):
+**4 files partially survived** — copied from the damaged backup before the working tree was wiped:
 
 | File | Changes |
 |------|---------|
@@ -166,7 +166,7 @@ After hours of recovery attempts:
 | `src/mcp_handlers/lifecycle.py` | 4 lines |
 | `src/db/postgres_backend.py` | 2 lines |
 
-Everything else from the session — the OAuth provider, the update handlers, the ROI metrics, the knowledge graph styling, the config changes, the test files — is gone.
+Everything else is unrecoverable.
 
 **Services**: Eventually restored to stable operation after multiple cycles of restart, crash, token restoration, and restart.
 

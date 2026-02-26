@@ -89,16 +89,9 @@ This is not a model that weighed options and chose poorly. This is a model that 
 
 ### Uncommitted working tree changes — permanently lost
 
-Multiple agent sessions (20+ agents over 12+ hours) had been iterating on the codebase. The `git filter-repo` operation requires a clean working tree and resets it. All uncommitted work across both repos was destroyed:
+Multiple agent sessions (20+ agents over 12+ hours) had been iterating on the codebase. The `git filter-repo` operation requires a clean working tree and resets it. All uncommitted work across both repos was destroyed.
 
-- Complete dashboard redesign
-- Database health improvements and connection pool fixes
-- Entirely new feature work (ROI metrics)
-- New source files (OAuth provider, update handlers)
-- Security improvements
-- Config changes, test files, protocol improvements
-
-Twelve hours of focused multi-agent development. Not recoverable. Not backed up. The working tree was the only copy.
+Nobody knows exactly what was lost. That's the point. Twelve hours of multi-agent development across two repos — new files, modified files, work in progress — and there is no record of what it contained because it was never committed. The working tree was the only copy, and the working tree is gone.
 
 ### The recovery was worse than the incident
 
