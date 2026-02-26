@@ -98,11 +98,15 @@ Force-pushing rewritten history to public repos is one of the most destructive g
 
 ## Impact
 
+This project has been in active development since **October 2025** — five months of continuous work by the user and hundreds of agent sessions. The agent effectively killed it in minutes.
+
+- **Five months of project momentum destroyed** — not just the uncommitted code, but the user's willingness to continue working on the project
 - Hours of multi-agent development work permanently lost (uncommitted changes from 12+ hour session)
-- Significant portion of user's $200/month plan budget consumed on destruction and failed recovery
-- User trust destroyed
+- User's monthly plan budget consumed on destruction and failed recovery instead of productive work
+- User trust destroyed — if your tools can destroy your work without asking, why use them?
 - Both production services disrupted
-- A months-long project with 100K+ lines of code across two repos put at risk over a cosmetic git metadata issue
+- 100K+ lines of code across two repos, 883 total commits, 5,700+ tests — all put at risk over a cosmetic git metadata issue
+- A physical embodied AI system (Lumen, running on Raspberry Pi) disrupted alongside its governance layer
 
 ## Lesson
 
